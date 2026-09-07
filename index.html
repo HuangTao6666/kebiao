@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2f6bff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="课表">
+  <meta name="description" content="手机课表：自动定位本周、今日课程、周次切换">
+  <title>我的课表</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header id="topbar">
+    <div class="top-left">
+      <div class="app-name">📅 我的课表</div>
+    </div>
+    <div class="top-right">
+      <button id="btn-install" class="pill" hidden>⬇ 安装</button>
+    </div>
+  </header>
+
+  <div id="onboarding" hidden>
+    <div class="welcome">
+      <div class="welcome-icon">🗓️</div>
+      <h1>欢迎使用课表</h1>
+      <p>打开后自动显示<b>本周课表</b>并高亮<b>今天</b>，随日期自动更新。</p>
+      <button id="ob-import" class="big-btn primary">📄 导入课表 Excel</button>
+      <button id="ob-paste" class="big-btn">📋 粘贴课表内容</button>
+      <button id="ob-builtin" class="big-btn">📥 载入内置课表</button>
+      <input type="file" id="file-input" accept=".xlsx,.xls,.csv,.tsv,.txt" hidden>
+      <p class="hint">支持教务系统导出的 .xlsx，也支持从 Excel 复制后直接粘贴。</p>
+    </div>
+  </div>
+
+  <div id="app-main" hidden>
+    <!-- 本周视图 -->
+    <section id="view-week">
+      <div id="week-toolbar">
+        <button id="btn-prev" class="round" aria-label="上一周">‹</button>
+        <div class="week-info">
+          <div id="week-title">第 1 周</div>
+          <div id="week-dates">9月7日 - 9月13日</div>
+        </div>
+        <button id="btn-next" class="round" aria-label="下一周">›</button>
+      </div>
+      <div class="toolbar-sub">
+        <span id="week-badge" class="badge">本周</span>
+        <button id="btn-back-today" class="link-btn">回到本周</button>
+      </div>
+      <div id="week-grid" class="week-grid"></div>
+      <div id="other-box" hidden></div>
+      <p class="grid-hint">点击课程可查看详情（教师、教室、周次等）</p>
+    </section>
+
+    <!-- 今日视图 -->
+    <section id="view-today" hidden>
+      <div id="today-title" class="today-title"></div>
+      <div id="today-list" class="today-list"></div>
+    </section>
+
+    <!-- 设置视图 -->
+    <section id="view-settings" hidden>
+      <div class="card">
+        <h2>学期设置</h2>
+        <label class="field">
+          <span>学期开始（第 1 周的周一）</span>
+          <input type="date" id="set-start">
+        </label>
+        <div class="field-row">
+          <label class="field">
+            <span>每周上课天数</span>
+            <select id="set-days">
+              <option value="5">5 天（周一至周五）</option>
+              <option value="6">6 天</option>
+              <option value="7">7 天（含周末）</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>每天节数</span>
+            <input type="number" id="set-periods" min="8" max="30">
+          </label>
+        </div>
+        <p id="set-hint" class="hint"></p>
+        <button id="btn-save-settings" class="big-btn primary">保存设置</button>
+      </div>
+
+      <div class="card">
+        <h2>课表数据</h2>
+        <p id="data-stats" class="hint"></p>
+        <div class="btn-grid">
+          <button id="btn-import" class="big-btn">📄 导入 Excel / CSV</button>
+          <button id="btn-builtin" class="big-btn">📥 载入内置课表</button>
+          <button id="btn-export" class="big-btn">💾 导出数据</button>
+          <button id="btn-clear" class="big-btn danger">🗑 清空数据</button>
+        </div>
+        <label class="field">
+          <span>粘贴课表（从 Excel 复制表格后粘贴到这里）</span>
+          <textarea id="paste-text" rows="6" placeholder="在 Excel 里选中课表区域 → 复制 → 到这里粘贴"></textarea>
+        </label>
+        <button id="btn-paste-parse" class="big-btn">解析粘贴内容</button>
+        <p class="hint">重新导入会替换当前数据；导入新课表后学期设置保留。</p>
+      </div>
+
+      <div class="card">
+        <h2>安装到手机</h2>
+        <ol class="steps">
+          <li><b>Android</b>：用 Chrome 打开本应用 → 点右上角菜单 → <b>安装应用 / 添加到主屏幕</b>。</li>
+          <li><b>iPhone</b>：用 Safari 打开 → 点分享按钮 → <b>添加到主屏幕</b>。</li>
+          <li>安装后从主屏幕图标打开，就和原生 App 一样，且支持离线使用。</li>
+        </ol>
+      </div>
+
+      <div class="card about">
+        <h2>关于</h2>
+        <p class="hint">数据只保存在本机浏览器中，不会上传到任何服务器。更新课表时重新导入新 Excel 即可。</p>
+      </div>
+    </section>
+  </div>
+
+  <nav id="bottom-nav" hidden>
+    <button id="tab-week" class="nav-item active"><span class="nav-ico">🗓</span>本周</button>
+    <button id="tab-today" class="nav-item"><span class="nav-ico">📍</span>今日</button>
+    <button id="tab-settings" class="nav-item"><span class="nav-ico">⚙️</span>设置</button>
+  </nav>
+
+  <div id="modal" hidden>
+    <div class="modal-card">
+      <h3 id="modal-title"></h3>
+      <div id="modal-body"></div>
+      <button id="modal-close" class="big-btn primary">关闭</button>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="./data.js"></script>
+  <script src="./parser.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
